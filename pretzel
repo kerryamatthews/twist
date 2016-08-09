@@ -1,0 +1,10 @@
+#!/bin/bash
+if [[ "${#}" -eq 2 ]] ; then
+    /usr/KRB5/bin/kshell -c /root/twist/lib/trsh-wrap-pretzel $1 "$2"
+else
+    echo "Please check your syntax."
+    echo "\$1 should be [HOST or all]."
+    echo "\$2 should be quoted COMMAND."
+    exit 3
+fi
+exit 0

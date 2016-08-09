@@ -1,0 +1,85 @@
+#!/bin/bash
+SCRPT_HOME=/root/twist
+LIST="$1"
+COMMAND="$2"
+KSHELL=/usr/KRB5/bin/kshell
+PING=/bin/ping
+RSH=/usr/KRB5/bin/rsh
+RCP=/usr/KRB5/bin/rcp
+KINIT=/usr/KRB5/bin/kinit
+
+printf "\n\n"
+
+$KINIT -k -t /usr/KRB5/etc/krb5.keytab
+
+if [[ "${#}" -eq 2 ]] ; then
+    case $LIST in
+            all)
+                for HOST in $(cat -v $SCRPT_HOME/lists/* | sort -u) ; do
+                    echo "Working on $HOST..."
+                    #$PING -c1 $HOST 1> /dev/null 2>&1
+                    #if [[ $? -ne 0 ]]
+                    #then
+                    #    echo $HOST" unreachable"
+#                   #     exit 2
+                    #fi
+                    echo "Running "
+                    $RSH -S $HOST "$COMMAND" >> $SCRPT_HOME/output/$HOST.log &
+                    if [[ $? -ne 0 ]]
+                    then
+                        echo $HOST" failure!"
+#                        exit 2
+                    else
+                        echo $HOST" sucess!"
+                    fi
+                done
+            ;;
+            *)
+                if [[ -e $SCRPT_HOME/lists/$LIST ]] ; then
+                    for HOST in $(cat -v $SCRPT_HOME/lists/$LIST | sort -u)
+                    do
+                        echo "Working on $HOST..."
+                        #$PING -c1 $HOST 1> /dev/null 2>&1
+                        #if [[ $? -ne 0 ]]
+                        #then
+                        #    echo $HOST" unreachable"
+#                       #     exit 2
+                        #fi
+                        echo "Running "
+				$RSH -S $HOST "$COMMAND" >> $SCRPT_HOME/output/$HOST.log &
+                        if [[ $? -ne 0 ]]
+                        then
+                            echo $HOST" failure!"
+#                            exit 2
+                        else
+                            echo $HOST" sucess!"
+                        fi
+                    done
+                else
+                    HOST=$LIST
+                    echo "Working on $HOST..."
+                    #$PING -c1 $HOST 1> /dev/null 2>&1
+                    #if [[ $? -ne 0 ]]
+                    #then
+                    #    echo $HOST" unreachable"
+#                   #     exit 2
+                    #fi
+                    echo "Running "
+                    $RSH -S $HOST "$COMMAND"
+                    if [[ $? -ne 0 ]]
+                    then
+                        echo $HOST" failure!"
+#                        exit 2
+                    else
+                        echo $HOST" sucess!"
+                    fi
+                fi
+            ;;
+    esac
+else
+    echo "Please check your syntax."
+    echo "\$1 should be [HOST or all]."
+    echo "\$2 should be quoted COMMAND."
+    exit 3
+fi
+exit 0
