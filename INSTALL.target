@@ -1,0 +1,34 @@
+# twist and 
+# Required Packages:
+xinetd
+
+# Insert hosts.allow entry to "twist" kshd connections from this IP address to start kshd without hardware 
+# preauthentication required.
+sed -i '/^sshd/{s/$/\nkshd : 192.168.1.100 : twist \/usr\/KRB5/\sbin\/kshd -5ec/}' /etc/hosts.allow
+
+# Insert a firewall rule to allow 544/tcp from the twist host
+iptables -I RH-Firewall-1-INPUT 1 -s 192.168.1.100 -p tcp -m state --state NEW -m tcp --dport 544 -j ACCEPT
+ 
+# Update or create the k5login for root to allow the twist host's host principal
+mkdir /usr/KRB5/users/root
+echo host/twist-host.some.domain.com@SOME.DOMAIN.COM >> /usr/KRB5/users/root/.k5login
+ 
+# Create the kshell xinted service entry
+cat <<EOF > /etc/xinetd.d/kshell
+# description: The kerberized rshell server accepts rshell commands
+#              authenticated and encrypted with Kerberos 5.
+service kshell
+{
+        socket_type             = stream
+        protocol                = tcp
+        user                    = root
+        server                  = /usr/KRB5/sbin/kshd
+        server_args             = -5EcH
+        wait                    = no
+        disable                 = no
+        log_on_failure          = HOST USERID
+}
+EOF
+
+# Start the xinted daemon
+/etc/init.d/xinetd restart
