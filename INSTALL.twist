@@ -1,0 +1,16 @@
+# twist
+# Required components:
+-kerberos version of rsh and rcp
+-kerberos host principal keytab or service principal keytab
+
+The twist and pretzel folders can be placed anywhere, as long as the paths are updated in the scripts.
+Currently twist and pretzel expects itself to be located in /root/twist/
+
+Host lists should be populated in:
+/root/twist/lists/
+
+trsh and trcp will process hosts sequentially, while pretzel and pretzel-cp will
+background each process as it starts them so it will be much closer to asynchronous.
+
+pretzel will place output per host in:
+/root/twist/output/
